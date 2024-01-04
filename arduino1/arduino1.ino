@@ -157,7 +157,6 @@ void lockDoor(){
   code_try=0;
   checkPrintState("Locked");
   inserted_password="";
-  loop();
 }
 
 void activateSolenoid(){   // code for supplying current to the relay to activate the solenoid.
@@ -234,23 +233,18 @@ void loop()                     // run over and over again
     }
     while (code_try == 3) {
       checkPrintState("Access denied");
-      // received_message = Serial.readString();
-      // if(received_message.length()>0){
-      //   if(received_message.endsWith(String('\n')))
-      //     received_message.remove(received_message.length()-2); 
-      // }
-      
-      // if (received_message.startsWith("Valid:")){
-      //   received_message.substring(6,9);
-      //   my_password=received_message;
-      //   biometric_try=0;
-      //   code_try=0;
-      //   loop();
-      // }else if (received_message.equals("keep")){
-      //   biometric_try=0;
-      //   code_try=0;
-      //   loop();
-      // }
+      while (code_try == 3 && !receivedValidMessage()) {
+        if (received_message.startsWith("Valid:")){
+          Serial.print(received_message);
+          received_message = received_message.substring(6,9);
+          Serial.print(received_message);
+          my_password=received_message;
+          lockDoor();
+        }else if (received_message.equals("keep")){
+          Serial.print(received_message);
+          lockDoor();
+        }
+      }
       
     }
     
@@ -258,6 +252,23 @@ void loop()                     // run over and over again
   delay(50);            //don't ned to run this at full speed.
   
   
+}
+
+bool receivedValidMessage() {
+    while (Serial.available() > 0) {
+        received_message = Serial.readString();
+        if (received_message.length() > 0) {
+            if (received_message.endsWith(String('\n'))) {
+                received_message.remove(received_message.length() - 2);
+            }
+
+            if (received_message.equals("Access denied")) {
+                // Handle "Access denied" message
+              return true;
+            }
+        }
+    }
+    return false;
 }
 
 uint8_t getFingerprintID() {

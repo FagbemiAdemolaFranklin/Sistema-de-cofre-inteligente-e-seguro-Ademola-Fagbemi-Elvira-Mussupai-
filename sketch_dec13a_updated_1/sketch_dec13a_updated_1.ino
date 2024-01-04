@@ -156,6 +156,7 @@ void lcdPrint(String receivedMessage) {
 void activateAlarm(){
   received_data="";
   tone(PIN_BUZZER, 490, 5000);
+  delay(5000);
   noTone(PIN_BUZZER);
   bluetoothMode();
 }
@@ -173,11 +174,11 @@ void bluetoothMode(){
 // void changePassword(){
 
 // }
-String new_password[4];
+String new_password;
 void bluetoothDecision(String decision){
   if (decision.equals("Yes")) {
     BTSerial.println("A random password would be generated, please save");
-    delay(2000);
+    delay(2000);  
     // BTSerial.println("Enter new password, (only 4 characters from 0-9 and end password with ';')");
     // while (BTSerial.available() > 0) {
     //   received_password_message = BTSerial.readString();
@@ -186,21 +187,15 @@ void bluetoothDecision(String decision){
     //   }
     // }
     for (int randomCount=0; randomCount<=3; randomCount++){
-      new_password[randomCount] = random(0,9);
+      new_password += String(random(0,9));
     }
-    BTSerial.print("New password generated:");
-    BTSerial.print(new_password[0,4]);
+    BTSerial.println("New password generated:");
+    BTSerial.println(new_password);
     Serial.print("Valid:");
-    Serial.print(new_password[0,4]);
-    Serial.println("1");
-    Serial.println("change-password");
-    bluetooth_mode = false;
-    loop();
+    Serial.print(new_password);
+    new_password="";
   }else if (decision.equals("No")) {
-    Serial.println("2");
     Serial.println("keep");
-    bluetooth_mode = false;
-    loop();
   }
 }
 
@@ -231,11 +226,10 @@ void loop() {
       bluetooth_message = BTSerial.readString();
       bluetooth_message.trim();
       bluetoothDecision(bluetooth_message);
+      bluetooth_mode = false;
+      loop();
       // if(bluetooth_message.endsWith(String('\n')))
       //   bluetooth_message.remove(bluetooth_message.length()-1);
-      Serial.println(bluetooth_message);
-      
-      Serial.println("Printed");
     }
   }
   received_data="";
