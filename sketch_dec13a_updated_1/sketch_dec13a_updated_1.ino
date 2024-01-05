@@ -16,7 +16,7 @@ bool bluetooth_mode;
 SoftwareSerial BTSerial(rxPin, txPin); // RX TX
 
 void lcdPrint(String receivedMessage) {
-  Serial.print(receivedMessage);
+  Serial.println(receivedMessage);
   if (receivedMessage.length() > 0) {
     if(receivedMessage.endsWith(String('\n')))
     Serial.println(receivedMessage);
@@ -146,6 +146,8 @@ void bluetoothDecision(String decision){
     new_password="";
   }else if (decision.equals("No")) {
     Serial.println("keep");
+  }else{
+    bluetooth_mode=true;
   }
 }
 
@@ -166,7 +168,6 @@ void setup() {
 void loop() {
   
   while (Serial.available() > 0) {
-    Serial.println("Reading serial monitor");
     received_data= Serial.readString();
     lcdPrint(received_data);
   }
@@ -177,7 +178,6 @@ void loop() {
       bluetooth_message.trim();
       bluetoothDecision(bluetooth_message);
       bluetooth_mode = false;
-      loop();
       // if(bluetooth_message.endsWith(String('\n')))
       //   bluetooth_message.remove(bluetooth_message.length()-1);
     }
