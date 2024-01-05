@@ -18,6 +18,13 @@
 #include <Adafruit_Fingerprint.h>
 # include <Keypad.h>
 # include <Servo.h>
+#include "HUSKYLENS.h"
+#include "SoftwareSerial.h"
+HUSKYLENS huskylens;
+SoftwareSerial mySerial(A3, A2); // RX, TX
+//HUSKYLENS green line >> Pin 10; blue line >> Pin 11
+void printResult(HUSKYLENSResult result);
+
 
 
 #if (defined(__AVR__) || defined(ESP8266)) && !defined(__AVR_ATmega2560__)
@@ -137,18 +144,7 @@ void openDoor(String inputed_key) {
 }
 
 void lockDoor(){
-  // int servo_current_degree = servo.read();
-  // if (servo_current_degree != 90) {
-  //   servo.write(90);
-  //   Serial.println("Locked"); //lcd must print locked
-  //   delay(2000);
-  //   digitalWrite(relay_pin, LOW);
-  //   servo_state = false;
-  //   inserted_password="";
-  //   biometric_try = 0;
-  //   code_try = 0;
-  //   loop();
-  // }
+  delay(2000);
   digitalWrite(relay_pin, LOW);
   digitalWrite(green_led, LOW);
   digitalWrite(red_led, HIGH);   
@@ -156,10 +152,12 @@ void lockDoor(){
   biometric_try=0;   
   code_try=0;
   checkPrintState("Locked");
+  delay(2000);
   inserted_password="";
 }
 
 void activateSolenoid(){   // code for supplying current to the relay to activate the solenoid.
+  delay(2000);
   checkPrintState("open door");  // open door displayed on the screen.
   doorState = true;
   digitalWrite(green_led, HIGH);
@@ -235,8 +233,7 @@ void loop()                     // run over and over again
       checkPrintState("Access denied");
       while (code_try == 3 && !receivedValidMessage()) {
         if (received_message.startsWith("Valid:")){
-          Serial.print(received_message);
-          received_message = received_message.substring(6,9);
+          received_message = received_message.substring(6,10);
           Serial.print(received_message);
           my_password=received_message;
           lockDoor();
@@ -278,15 +275,19 @@ uint8_t getFingerprintID() {
       Serial.println("Image taken");
       break;
     case FINGERPRINT_NOFINGER:
+      delay(2000);
       checkPrintState("No finger detected");
       return p;
     case FINGERPRINT_PACKETRECIEVEERR:
+      delay(2000);
       Serial.println("Communication error");
       return p;
     case FINGERPRINT_IMAGEFAIL:
+      delay(2000);
       Serial.println("Imaging error");
       return p;
     default:
+      delay(2000);
       Serial.println("Unknown error");
       return p;
   }
@@ -302,15 +303,19 @@ uint8_t getFingerprintID() {
       Serial.println("Image too messy");
       return p;
     case FINGERPRINT_PACKETRECIEVEERR:
+      delay(2000);
       Serial.println("Communication error");
       return p;
     case FINGERPRINT_FEATUREFAIL:
+      delay(2000);
       Serial.println("Could not find fingerprint features");
       return p;
     case FINGERPRINT_INVALIDIMAGE:
+      delay(2000);
       Serial.println("Could not find fingerprint features");
       return p;
     default:
+      delay(2000);
       Serial.println("Unknown error");
       return p;
   }
@@ -318,17 +323,21 @@ uint8_t getFingerprintID() {
   // OK converted!
   p = finger.fingerSearch();
   if (p == FINGERPRINT_OK) {
-    activateSolenoid();
+    delay(2000);
     Serial.println("Found a print match!");
+    delay(1000);
+    activateSolenoid();
   } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
     Serial.println("Communication error");
     return p;
   } else if (p == FINGERPRINT_NOTFOUND) {
-    Serial.println("Did not find a match");
-    biometric_try +=1;
     delay(1000);
+    Serial.println("Did not find a match");
+    delay(2000);
+    biometric_try +=1;
     return p;
   } else {
+    delay(2000);
     Serial.println("Unknown error");
     return p;
   }

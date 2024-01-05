@@ -10,6 +10,7 @@ String messageBuffer = "";
 String message = "";
 String received_data;
 String bluetooth_message;
+String new_password;
 int j;
 bool bluetooth_mode;
 SoftwareSerial BTSerial(rxPin, txPin); // RX TX
@@ -21,74 +22,6 @@ void lcdPrint(String receivedMessage) {
     Serial.println(receivedMessage);
       receivedMessage.remove(receivedMessage.length()-2);
   }
-  // switch (receivedMessage) {
-  //  case receivedMessage.startsWith("Enroll"):
-  //     lcd.clear();
-  //     lcd.print("Enroll fingerprint");
-  //     lcd.clear();
-  //     lcd.print("Keep eye on serial monitor");
-  //     break;
-  //   case receivedMessage.startsWith("Did not"):
-  //     lcd.clear();
-  //     lcd.print("False print");
-  //     break;
-  //   case receivedMessage.equals("typing"):
-  //     lcd.off();
-  //     delay(3000);
-  //     lcd.on();
-  //     lcd.clear();
-  //     lcd.print("Enter new passsword");
-  //     break;
-  //   case receivedMessage.length() < 2:
-  //     if(j==4){
-  //       j=0;
-  //       lcd.setCursor(j,1);
-  //       lcd.print(receivedMessage);
-  //       delay(1000);
-  //       lcd.setCursor(j,1);
-  //       lcd.print("*");
-  //       j++;
-  //       break;
-  //     }else{
-  //       lcd.setCursor(j,1);
-  //       lcd.print(receivedMessage);
-  //       delay(1000);
-  //       lcd.setCursor(j,1);
-  //       lcd.print("*");
-  //       j++;
-  //       break;
-  //     }
-  //   case receivedMessage.equals("confirming"):
-  //     lcd.clear();
-  //     lcd.print("Confirm password");
-  //     break;
-  //   case receivedMessage.startsWith("writing"):
-  //     lcd.clear();
-  //     lcd.print("Enter password");
-  //     break;
-  //   case receivedMessage.startsWith("Activate"):
-  //     lcd.clear();
-  //     lcd.print("Safe blocked");
-  //     delay(2000);
-  //     lcd.clear();
-  //     lcd.print("Check phone");
-  //     activateAlarm();
-  //   case receivedMessage.startsWith("Waiting"):
-  //     lcd.clear();
-  //     lcd.print("Place valid finger");
-  //     break;
-  //   case receivedMessage.equals("Try again"):
-  //     lcd.clear();
-  //     lcd.print("Try again");
-  //     break;
-  //   case receivedMessage.equals("Incorrect"):
-  //     lcd.clear();
-  //     lcd.print("Incorrect");
-  //     break;
-  //   default:
-  //     Serial.println(receivedMessage);
-  //     break;
-  // }
   if(receivedMessage.startsWith("Enroll")){
     lcd.clear();
     lcd.print("Enroll fingerprint");
@@ -149,6 +82,21 @@ void lcdPrint(String receivedMessage) {
   }else if(receivedMessage.equals("mismatch")){
     lcd.clear();
     lcd.print("Mismatch");
+  }else if(receivedMessage.equals("No finger detected")){
+    lcd.clear();
+    lcd.print("Place finger");
+  }else if (receivedMessage.endsWith(String("error"))){
+    lcd.clear();
+    lcd.print("Check scanner");
+  }else if(receivedMessage.equals("Found a print match!")){
+    lcd.clear();
+    lcd.print("Match found");
+  }else if(receivedMessage.equals("Locked")){
+    lcd.clear();
+    lcd.print("Locked");
+  }else if(receivedMessage.equals("open door")){
+    lcd.clear();
+    lcd.print("Opened");
   }
   receivedMessage="";
 }
@@ -174,7 +122,7 @@ void bluetoothMode(){
 // void changePassword(){
 
 // }
-String new_password;
+
 void bluetoothDecision(String decision){
   if (decision.equals("Yes")) {
     BTSerial.println("A random password would be generated, please save");
@@ -187,7 +135,9 @@ void bluetoothDecision(String decision){
     //   }
     // }
     for (int randomCount=0; randomCount<=3; randomCount++){
+      randomSeed(analogRead(A0) + analogRead(A1) + analogRead(A2) + millis());
       new_password += String(random(0,9));
+      delay(10);
     }
     BTSerial.println("New password generated:");
     BTSerial.println(new_password);
@@ -205,7 +155,7 @@ void setup() {
   pinMode(txPin, OUTPUT);
   lcd.init();
   lcd.backlight();
-  lcd.print("Welcome");
+  lcd.print("Safe system");
   BTSerial.begin(9600);
   BTSerial.println("Bluetooth connection successful");
   Serial.begin(9600);
