@@ -382,24 +382,25 @@ uint8_t getFingerprintID() {
     delay(1000);
     activateSolenoid();
   } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
-    Serial.println("Communication error");
+    checkPrintState("Communication error");
     return p;
   } else if (p == FINGERPRINT_NOTFOUND) {
     delay(1000);
-    Serial.println("Did not find a match");
-    delay(2000);
+    checkPrintState("Did not find a match");
     biometric_try +=1;
+    delay(2000);
     return p;
   } else {
     delay(2000);
-    Serial.println("Unknown error");
+    checkPrintState("Unknown error");
     return p;
   }
 
   // found a match!
   Serial.print("Found ID #"); Serial.print(finger.fingerID);
   Serial.print(" with confidence of "); Serial.println(finger.confidence);
-
+  while (p != FINGERPRINT_OK && biometric_try <= 2);
+  return p;
   return finger.fingerID;
 }
 
